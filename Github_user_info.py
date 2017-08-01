@@ -1,5 +1,4 @@
 # Tracks and fetches Github Users and Related info.
-from github import Github
 from urllib2 import urlopen, Request
 import json
 
