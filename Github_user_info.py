@@ -10,7 +10,6 @@ class Github_user_data:
 
     def __init__(self,usertoken,username=None,cust_api_url=None):
         self.apiToken = str(usertoken)
-        self.git_user_object = Github(self.apiToken)
         self.obj_username = username
         self.custom_url = cust_api_url
 
