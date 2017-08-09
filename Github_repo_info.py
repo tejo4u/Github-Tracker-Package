@@ -1,6 +1,5 @@
 from urllib2 import urlopen, Request
 import json
-from pprint import pprint
 
 class Github_repo_data:
     apiToken = ''
@@ -29,7 +28,7 @@ class Github_repo_data:
         self.custom_url = temp_api_url
         return raw_json
 
-    def get_latest_commit(self,username=None,repo_name=None):
+    def get_latest_commit(self,username=None,repo_name=None,branch='master'):
         temp_obj_username=None
         temp_obj_reponame=None
         if(username!=None and repo_name!=None):
@@ -38,7 +37,7 @@ class Github_repo_data:
             self.obj_username=username
             self.custom_repo_name = repo_name
 
-        latest_commit_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/commits"
+        latest_commit_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/commits?per_page=1&sha="+str(branch)
         latest_commit_json = self.get_raw_json(latest_commit_url)
         commit_detail_dict = dict()
 
@@ -51,7 +50,7 @@ class Github_repo_data:
         self.custom_repo_name = temp_obj_reponame
         return commit_detail_dict
 
-    def get_commits(self,username,repo_name,last_n=5,all_commits=False):
+    def get_commits(self,username,repo_name,branch='master',last_n=5,all_commits=False):
         temp_obj_username=None
         temp_obj_reponame=None
         if(username!=None and repo_name!=None):
@@ -60,23 +59,33 @@ class Github_repo_data:
             self.obj_username=username
             self.custom_repo_name = repo_name
 
-        latest_commit_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/commits"
-        latest_commit_json = self.get_raw_json(latest_commit_url)
-
-        range_count = last_n
-        if(all_commits == True):
-            range_count = len(latest_commit_json)
-
         commit_dict_list = list()
+        range_count = last_n
 
-        for i in range(0,range_count):
-            commit_detail_dict=dict()
-            commit_detail_dict['name']=latest_commit_json[i]['commit']['committer']['name']
-            commit_detail_dict['date']=latest_commit_json[i]['commit']['committer']['date']
-            commit_detail_dict['msg']=latest_commit_json[i]['commit']['message']
-            commit_detail_dict['url']=latest_commit_json[i]['html_url']
+        isNotLastCommit = True
+        page_index=0
 
-            commit_dict_list.append(commit_detail_dict)
+        while isNotLastCommit != []:
+
+            latest_commit_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/commits?page=" + str(page_index) + "&per_page=100&sha="+str(branch)
+            latest_commit_json = self.get_raw_json(latest_commit_url)
+            isNotLastCommit = latest_commit_json[len(latest_commit_json)-1]['parents']
+
+            if(all_commits == True):
+                range_count = len(latest_commit_json)
+
+            for i in range(0,range_count):
+                commit_detail_dict=dict()
+                commit_detail_dict['name']=latest_commit_json[i]['commit']['committer']['name']
+                commit_detail_dict['date']=latest_commit_json[i]['commit']['committer']['date']
+                commit_detail_dict['msg']=latest_commit_json[i]['commit']['message']
+                commit_detail_dict['url']=latest_commit_json[i]['html_url']
+                commit_dict_list.append(commit_detail_dict)
+
+            if(range_count == last_n):
+                break;
+            page_index+=1
+
 
         self.obj_username = temp_obj_username
         self.custom_repo_name = temp_obj_reponame
