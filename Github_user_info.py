@@ -1,4 +1,3 @@
-# Tracks and fetches Github Users and Related info.
 from urllib2 import urlopen, Request
 import json
 
@@ -169,3 +168,5 @@ class Github_user_data:
     def get_user_profile_link(self,username):
         user_profile_link_url = "https://api.github.com/users/"+ str(username)
         return self.get_raw_json(user_profile_link_url)['html_url']
+    def is_following(self,fromuser,touser):
+        following_url = "https://api.github.com/users/"

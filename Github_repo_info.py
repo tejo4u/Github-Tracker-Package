@@ -91,3 +91,59 @@ class Github_repo_data:
         self.custom_repo_name = temp_obj_reponame
 
         return commit_dict_list
+    def get_latest_pull_request(self,username=None,repo_name=None,branch='master'):
+        temp_obj_username=None
+        temp_obj_reponame=None
+        if(username!=None and repo_name!=None):
+            temp_obj_reponame = self.obj_username
+            temp_obj_reponame = self.custom_repo_name
+            self.obj_username=username
+            self.custom_repo_name = repo_name
+
+        latest_pulls_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/pulls"
+        latest_pulls_json = self.get_raw_json(latest_pulls_url)
+        pulls_detail_dict = dict()
+
+        pulls_detail_dict['Title'] = latest_pulls_json[0]['title']
+        pulls_detail_dict['Body'] = latest_pulls_json[0]['body']
+        pulls_detail_dict['Url'] = latest_pulls_json[0]['diff_url']
+        pulls_detail_dict ['login'] = latest_pulls_json[0]['user']['login']
+
+
+        self.obj_username = temp_obj_username
+        self.custom_repo_name = temp_obj_reponame
+        return pulls_detail_dict
+
+    def get_pulls(self,username,repo_name,last_n=5,all_pulls=False):
+        temp_obj_username=None
+        temp_obj_reponame=None
+        if(username!=None and repo_name!=None):
+            temp_obj_reponame = self.obj_username
+            temp_obj_reponame = self.custom_repo_name
+            self.obj_username=username
+            self.custom_repo_name = repo_name
+
+        pulls_dict_list = list()
+
+        latest_pulls_url = "https://api.github.com/repos/"+str(self.obj_username)+"/"+str(self.custom_repo_name)+"/pulls"
+        latest_pulls_json = self.get_raw_json(latest_pulls_url)
+
+        if(all_pulls == True):
+            range_count = len(latest_pulls_json)
+        else:
+            range_count = last_n
+
+        for i in range(0,range_count):
+            pulls_detail_dict=dict()
+
+            pulls_detail_dict['Title'] = latest_pulls_json[i]['title']
+            pulls_detail_dict['Body'] = latest_pulls_json[i]['body']
+            pulls_detail_dict['Url'] = latest_pulls_json[i]['diff_url']
+            pulls_detail_dict ['login'] = latest_pulls_json[i]['user']['login']
+
+            pulls_dict_list.append(pulls_detail_dict)
+
+        self.obj_username = temp_obj_username
+        self.custom_repo_name = temp_obj_reponame
+
+        return pulls_dict_list
